@@ -5,15 +5,110 @@
 
 int black_screen[1280*1024];
 int* image_buffer_pointer = (int *)0x00900000;
-//int* buffer2_pointer = (int *)0x018D2008;
 int NUM_BYTES_BUFFER = 5242880;
 extern int currentcolor;
 extern int* colors;
-void MatrixRotate() {
+
+int SnakeFaceTemp[20][20];
+int SnakeAliveFace[20][20] = {
+
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,1},
+		{1,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1},
+		{1,0,0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0,0,1},
+		{1,0,0,0,0,0,1,2,2,2,2,2,2,1,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+
+int SnakeDeadFace[20][20] = {
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1},
+		{1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,1},
+		{1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
+		{1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,1},
+		{1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+
+void DrawSnakeHead(int x_coord, int y_coord, bool remove, int color, bool alive) {
+	int SnakeFaceSelect;
+	for(int y = 0; y<20; y++) {
+		for(int x = 0; x<20; x++) {
+			int pixel_color;
+			if(!remove){
+				if(alive){
+					SnakeFaceSelect = SnakeAliveFace[y][x];
+				}
+				else {
+					SnakeFaceSelect = SnakeDeadFace[y][x];
+				}
+				switch(SnakeFaceSelect){
+					case 0:
+						pixel_color = color;
+						break;
+					case 1:
+						pixel_color = 0x000000; // black
+						break;
+					case 2:
+						pixel_color = 0x0000FF; // tongue color = red
+						break;
+					default:
+						pixel_color = color;
+						break;
+					}
+				image_buffer_pointer[(y_coord+y)*1280+(x_coord+x)] = pixel_color;
+			//		image_buffer_pointer[y*1280+x] = color;
+			}
+			else
+				image_buffer_pointer[(y_coord+y)*1280+(x_coord+x)] = 0xFF00FF;
+		}
+	}
+}
+void Rotate90DegClockWise(int mat[20][20]) {
 	// transpose matrix then reverse order of columns to rotate 90 degrees clockwise
 	// to implement the snake head direction
-
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+        	SnakeFaceTemp[j][N - i - 1] = mat[i][j];
+        }
+    }
 }
+
+void Rotate90DegCounterClockWise() {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+        	SnakeFaceTemp[N - i - 1][i] = mat[i][j];
+        }
+    }
+}
+
 void DrawFruit(int x_coord, int y_coord) {
 	for(int y = y_coord; y<y_coord+20; y++) {
 		for(int x = x_coord; x<x_coord+20; x++) {
@@ -28,10 +123,6 @@ void DrawFruit(int x_coord, int y_coord) {
 }
 
 void DrawBlock(int x_coord, int y_coord, bool remove, int color) {
-	// I want to make DrawBlock not have buffer_pointer as a parameter
-	// TODO: reorganize code
-	// x = which column
-	// y = which row
 	// each block is 20 by 20 pixels
 	for(int y = y_coord; y<y_coord+20; y++) {
 		for(int x = x_coord; x<x_coord+20; x++) {
@@ -49,12 +140,6 @@ void DrawBlock(int x_coord, int y_coord, bool remove, int color) {
 	}
 }
 
-void DrawSnake(int size, int x, int y) {
-	for(int i = 0; i < size; i++) { //size = length of snake
-		DrawBlock(x+i*20, y, false, colors[currentcolor]);
-		//usleep(50000);
-	}
-}
 
 void Init_Map() {
 	for(int y = 0; y<1024; y++) {

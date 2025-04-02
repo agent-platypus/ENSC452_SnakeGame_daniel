@@ -14,4 +14,6 @@ void DisplayEasy();
 void DisplayMedium();
 void ClearDifficulty();
 void DisplayGameover();
+void DisplayVictory();
+
 #endif

@@ -12,6 +12,9 @@ void ToggleColor();
 void DisplayDifficulty(int difficulty);
 void DisplayEasy();
 void DisplayMedium();
+void DisplayHard();
 void ClearDifficulty();
 void DisplayGameover();
+void DisplayVictory();
+
 #endif

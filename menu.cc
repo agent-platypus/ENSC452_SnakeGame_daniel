@@ -17,8 +17,9 @@ int* startscreenOptions = (int*) 0x028A4010;
 int* optionscreen = (int *) 0x0308D014;
 int* easy_text =   (int *) 0x03876018;
 int* medium_text = (int *) 0x03896018;
-int* victory_text= (int *) 0x03906018;
-int* defeat_text = (int *) 0x03916018;
+int* hard_text =   (int *) 0x06006018;
+int* victory_text= (int *) 0x05006018;
+int* defeat_text = (int *) 0x03926018;
 
 enum color{
 	blue = 0,
@@ -55,7 +56,7 @@ int colors[15] = {
     0x00808080  // Gray (128, 128, 128)
 };
 int colorindex = green;
-int currentcolor = colors[colorindex];
+//int currentcolor = colors[colorindex];
 
 void StartScreen(){
 	memcpy(image_buffer_pointer, startscreen,NUM_BYTES_BUFFER);
@@ -142,36 +143,41 @@ void StartMenuToggle(int option) {
 void ToggleColor() {
 	colorindex++;
 	colorindex = colorindex%15;
-	currentcolor = colors[colorindex];
-	//printf("current color\n");
+	//currentcolor = colors[colorindex];
 }
 
 void DisplayDifficulty(int difficulty) {
 	ClearDifficulty();
 	switch(difficulty) {
-		case 1:
+		case 0:
 			DisplayEasy();
 			break;
-		case 2:
+		case 1:
 			DisplayMedium();
+			break;
+		case 2:
+			DisplayHard();
 			break;
 		default:
 			break;
 	}
 }
-void DisplayEasy() {
-	// 627, 429	difficulty
-	//for(int y = DIFFICULTY_TEXT_Y; y<DIFFICULTY_TEXT_Y+58; y++) {
 
+// drawing texts line by line, line dimension = width of jpg
+void DisplayEasy() {
 	for(int y = 0; y<52; y++) {
 		memcpy(image_buffer_pointer + ((y+DIFFICULTY_TEXT_Y)*1280 + DIFFICULTY_TEXT_X), easy_text + (y*109), 436);
 	}
 }
 void DisplayMedium() {
-	// 627, 429	difficulty
-	//for(int y = DIFFICULTY_TEXT_Y; y<DIFFICULTY_TEXT_Y+ 52; y++) {
 	for(int y = 0; y<48; y++) {
 		memcpy(image_buffer_pointer +((y+DIFFICULTY_TEXT_Y)*1280 + DIFFICULTY_TEXT_X), medium_text + (y*102), 408);
+	}
+}
+
+void DisplayHard() {
+	for(int y = 0; y<51; y++) {
+		memcpy(image_buffer_pointer +((y+DIFFICULTY_TEXT_Y)*1280 + DIFFICULTY_TEXT_X), hard_text + (y*119), 456);
 	}
 }
 
@@ -181,9 +187,16 @@ void DisplayGameover() {
 	}
 }
 
+void DisplayVictory() {
+	for(int y = 0; y<99; y++) {
+		memcpy(image_buffer_pointer +((y+GAMEOVER_TEXT_Y)*1280 + GAMEOVER_TEXT_X), victory_text + (y*337), 1348);
+	}
+}
+
+
 void ClearDifficulty() {
 	for(int y = DIFFICULTY_TEXT_Y; y< DIFFICULTY_TEXT_Y+53; y++) {
-		for(int x = DIFFICULTY_TEXT_X; x<DIFFICULTY_TEXT_X+109; x++) {
+		for(int x = DIFFICULTY_TEXT_X; x<DIFFICULTY_TEXT_X+112; x++) {
 			image_buffer_pointer[y*1280 + x] = 0xFFFFFF;
 		}
 	}
